@@ -23,7 +23,7 @@
 <body>
     <canvas id="gridCanvas" width="700" height="700"></canvas>
     <script>
-        var offset = 1;
+        var offset = 1.0;
         var canvas = document.getElementById('gridCanvas');
         canvas.style.width = canvas.width + 'px';
         canvas.style.height = canvas.height + 'px';
@@ -58,13 +58,13 @@
             ctx.fillRect(-5, -5, 10, 10)
             ctx.beginPath();
             for (var x = offsetX - 10; x <= offsetX + 10; x += 1) {
-                const pos = x * unit;
+                const pos = x * unit * offset;
                 ctx.moveTo(pos, -canvas.height - absCY);
                 ctx.lineTo(pos, canvas.height + absCY);
                 ctx.strokeText(x * step, pos, cH + cY);
             }
             for (var y = offsetY - 10; y <= offsetY + 10; y += 1) {
-                const pos = y * unit;
+                const pos = y * unit * offset;
                 ctx.moveTo(-canvas.width - absCX, pos);
                 ctx.lineTo(canvas.width + absCX, pos);
                 ctx.strokeText(y * step, cX - cW, pos);
@@ -76,9 +76,8 @@
 
         canvas.addEventListener('wheel', (e) => {
             const value = event.deltaY * 0.001;
-            offset -= value;
-            // const scale = (e.deltaY < 0 || e.wheelDelta > 0) ? 1.0 / 1.1 : 1.1;
-            // offset *= scale;
+            const scale = (e.deltaY < 0 || e.wheelDelta > 0) ? 1.0 / 1.1 : 1.1;
+            offset *= scale;
             renderGrid(0, 0);
         })
         var mouse = {};
