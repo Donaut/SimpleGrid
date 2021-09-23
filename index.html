@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: rgba(137, 43, 226, 0.623);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            border: black 1px solid;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gridCanvas" width="700" height="700"></canvas>
+    <script>
+        var offset = 1;
+        var canvas = document.getElementById('gridCanvas');
+        canvas.style.width = canvas.width + 'px';
+        canvas.style.height = canvas.height + 'px';
+        var scale = window.devicePixelRatio;
+        canvas.width = canvas.width * scale;
+        canvas.height = canvas.height * scale;
+        /** @type {CanvasRenderingContext2D} */
+        var ctx = canvas.getContext('2d');
+        ctx.scale(scale, scale);
+        ctx.translate(canvas.width / 2 / scale, canvas.height / 2 / scale)
+        function renderGrid(x, y) {
+            // Clearingt The Canvas
+            ctx.save()
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            // End Clearing The Canvas
+            ctx.translate(x, y)
+            const transform = ctx.getTransform();
+            const step = Math.pow(5.0, Math.floor(offset / 3)).toPrecision(2);
+            const cW = canvas.width / 2 / scale;
+            const cH = canvas.height / 2 / scale;
+            const cX = (canvas.width / 2 - transform.e) / scale;
+            const cY = (canvas.height / 2 - transform.f) / scale;
+            const absCX = Math.abs(cX);
+            const absCY = Math.abs(cY);
+            const ncW = canvas.width / 2 / scale;
+            const ncH = canvas.height / 2 / scale;
+            const unit = 100;
+            const offsetX = Math.floor(cX / unit);
+            const offsetY = Math.floor(cY / unit);
+            ctx.fillRect(-5, -5, 10, 10)
+            ctx.beginPath();
+            for (var x = offsetX - 10; x <= offsetX + 10; x += 1) {
+                const pos = x * unit;
+                ctx.moveTo(pos, -canvas.height - absCY);
+                ctx.lineTo(pos, canvas.height + absCY);
+                ctx.strokeText(x * step, pos, cH + cY);
+            }
+            for (var y = offsetY - 10; y <= offsetY + 10; y += 1) {
+                const pos = y * unit;
+                ctx.moveTo(-canvas.width - absCX, pos);
+                ctx.lineTo(canvas.width + absCX, pos);
+                ctx.strokeText(y * step, cX - cW, pos);
+            }
+            ctx.closePath();
+
+            ctx.stroke();
+        }
+
+        canvas.addEventListener('wheel', (e) => {
+            const value = event.deltaY * 0.001;
+            offset -= value;
+            // const scale = (e.deltaY < 0 || e.wheelDelta > 0) ? 1.0 / 1.1 : 1.1;
+            // offset *= scale;
+            renderGrid(0, 0);
+        })
+        var mouse = {};
+        canvas.addEventListener('mousedown', () => {
+            mouse.isDragging = true;
+            mouse.prevX = 0;
+            mouse.prevY = 0;
+        })
+        canvas.addEventListener('mouseup', () => {
+            mouse.isDragging = false;
+            mouse.prevX = 0;
+            mouse.prevY = 0;
+        })
+        canvas.addEventListener('mousemove', () => {
+            if (mouse.isDragging === true) {
+                if (mouse.prevX > 0 || mouse.prevY > 0) {
+                    const x = event.pageX - mouse.prevX;
+                    const y = event.pageY - mouse.prevY;
+                    renderGrid(x, y);
+                }
+                mouse.prevX = event.pageX;
+                mouse.prevY = event.pageY;
+            }
+        })
+
+        renderGrid(0, 0)
+    </script>
+</body>
+
+
+</html>
