@@ -23,7 +23,7 @@
 <body>
     <canvas id="gridCanvas" width="700" height="700"></canvas>
     <script>
-        var offset = 1;
+        var Scale = 1;
         var canvas = document.getElementById('gridCanvas');
         canvas.style.width = canvas.width + 'px';
         canvas.style.height = canvas.height + 'px';
@@ -34,40 +34,68 @@
         var ctx = canvas.getContext('2d');
         ctx.scale(scale, scale);
         ctx.translate(canvas.width / 2 / scale, canvas.height / 2 / scale)
-        function renderGrid(x, y) {
+        function renderGrid(column, row) {
             // Clearingt The Canvas
             ctx.save()
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.restore();
             // End Clearing The Canvas
-            ctx.translate(x, y)
+            ctx.translate(column, row)
+            /* A legfontosabb kód ez az 1 sor! Ez mondja meg, hogy egy adott nagyításnál mekkora legyen a lépések száma. 
+            A 6-os a lépések számát mondja meg mikor ezt túllépjük váltunk egy másik részletességre.*/
+            const step = Math.pow(5.0, Math.floor(Math.log(Scale) / Math.log(6.0)));
             const transform = ctx.getTransform();
-            const step = Math.pow(5.0, Math.floor(offset / 3)).toPrecision(2);
-            const cW = canvas.width / 2 / scale;
-            const cH = canvas.height / 2 / scale;
-            const cX = (canvas.width / 2 - transform.e) / scale;
-            const cY = (canvas.height / 2 - transform.f) / scale;
+            const cW = canvas.width / scale;
+            const cH = canvas.height / scale;
+            const cX = (cW / 2 - transform.e);
+            const cY = (cH / 2 - transform.f);
             const absCX = Math.abs(cX);
             const absCY = Math.abs(cY);
-            const ncW = canvas.width / 2 / scale;
-            const ncH = canvas.height / 2 / scale;
-            const unit = 100;
-            const offsetX = Math.floor(cX / unit);
-            const offsetY = Math.floor(cY / unit);
-            ctx.fillRect(-5, -5, 10, 10)
             ctx.beginPath();
-            for (var x = offsetX - 10; x <= offsetX + 10; x += 1) {
-                const pos = x * unit;
-                ctx.moveTo(pos, -canvas.height - absCY);
-                ctx.lineTo(pos, canvas.height + absCY);
-                ctx.strokeText(x * step, pos, cH + cY);
+            const lineStartC = -cW - absCY;
+            const lineEndC = cW + absCY;
+            /* TODO: Kitalálni, honnan kezdödjön a for-ciklus.
+               TODO: Kitalálni, hogy lehet úgy nagyítani, hogy közben relatív ugyan ott maradunk. (Ha szeretnéd megtapasztalni menj el a 0,0 kordinátárról. Azt veszed észre hogy habár ha nem mozogsz az egérrel, ha nagyítasz mégis egy másik számnál lyukadsz ki.) 
+                ROSSZ (Jelenleg):
+                --------------------------------------
+                NAGYÍTÁS ELŐTT:         NAGYÍTÁS UTÁN:
+                ^                       ^
+                |                       |
+                |    X -> Középpont     |     x -> Középpont
+                |                       |
+                +---------->            +---------->
+                    |   |                  |  |  |
+                    5   25                 5  25 30
+
+                JÓ:
+                --------------------------------------
+                NAGYÍTÁS ELŐTT:         NAGYÍTÁS UTÁN:
+                ^                       ^
+                |                       |
+                |    X -> Középpont     |     x -> Középpont
+                |                       |
+                +---------->            +---------->
+                    |   |                  |    | 
+                    5   25                 5    25 
+                Ha ez sikerül akkor lehetséges, hogy nem kell
+             */
+            for (var column = -10; column <= 10; column += 1) {
+                const pos = column * step;
+                let ix = 300 * (pos / Scale);
+                ctx.moveTo(ix, lineStartC);
+                ctx.lineTo(ix, lineEndC);
+                ctx.strokeText(pos, ix, 0);
             }
-            for (var y = offsetY - 10; y <= offsetY + 10; y += 1) {
-                const pos = y * unit;
-                ctx.moveTo(-canvas.width - absCX, pos);
-                ctx.lineTo(canvas.width + absCX, pos);
-                ctx.strokeText(y * step, cX - cW, pos);
+
+            const lineStartR = -cW - absCX;
+            const lineEndR = cW + absCX;
+            for (var row = -10; row <= 10; row += 1) {
+                const pos = row * step;
+                let iy = 300 * (pos / Scale);
+                ctx.moveTo(lineStartR, iy);
+                ctx.lineTo(lineEndR, iy);
+                ctx.strokeText(pos, 0, iy);
             }
             ctx.closePath();
 
@@ -75,10 +103,8 @@
         }
 
         canvas.addEventListener('wheel', (e) => {
-            const value = event.deltaY * 0.001;
-            offset -= value;
-            // const scale = (e.deltaY < 0 || e.wheelDelta > 0) ? 1.0 / 1.1 : 1.1;
-            // offset *= scale;
+            const scale = (e.deltaY < 0 || e.wheelDelta > 0) ? 1.0 / 1.1 : 1.1;
+            Scale *= scale;
             renderGrid(0, 0);
         })
         var mouse = {};
