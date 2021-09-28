@@ -34,14 +34,14 @@
         var ctx = canvas.getContext('2d');
         ctx.scale(scale, scale);
         ctx.translate(canvas.width / 2 / scale, canvas.height / 2 / scale)
-        function renderGrid(column, row) {
+        function renderGrid(x, y) {
             // Clearingt The Canvas
             ctx.save()
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.restore();
             // End Clearing The Canvas
-            ctx.translate(column, row)
+            ctx.translate(x, y)
             /* A legfontosabb kód ez az 1 sor! Ez mondja meg, hogy egy adott nagyításnál mekkora legyen a lépések száma. 
             A 6-os a lépések számát mondja meg mikor ezt túllépjük váltunk egy másik részletességre.*/
             const step = Math.pow(5.0, Math.floor(Math.log(Scale) / Math.log(6.0)));
